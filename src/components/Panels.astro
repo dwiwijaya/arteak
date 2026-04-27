@@ -1,0 +1,400 @@
+---
+import { useTranslations, type Lang } from '../data/i18n';
+import { infoContent } from '../data/info';
+
+export interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const infoTabs = Object.keys(infoContent) as (keyof typeof infoContent)[];
+---
+
+<!-- ─── CART OVERLAY ──────────────────────────────────── -->
+<div class="cart-overlay" id="cart-overlay" aria-hidden="true"></div>
+
+<!-- ─── CART SIDEBAR ─────────────────────────────────── -->
+<aside class="cart-sidebar" id="cart-sidebar" role="dialog" aria-modal="true" aria-label="Enquiry list">
+  <div class="cart-header">
+    <span class="cart-header-title" data-i18n="cart.title">{t('cart.title')}</span>
+    <button class="cart-close" id="cart-close" aria-label="Close cart">✕</button>
+  </div>
+  <div class="cart-items" id="cart-items">
+    <div class="cart-empty">
+      <div class="cart-empty-icon">🪵</div>
+      <div class="cart-empty-text" data-i18n="cart.empty">{t('cart.empty')}</div>
+      <div class="cart-empty-sub" data-i18n="cart.empty.sub">{t('cart.empty.sub')}</div>
+    </div>
+  </div>
+  <div class="cart-footer" id="cart-footer" style="display:none">
+    <div class="cart-total-row">
+      <span class="cart-total-label" data-i18n="cart.total">{t('cart.total')}</span>
+      <span class="cart-total-val" id="cart-total">Rp 0</span>
+    </div>
+    <button class="checkout-btn" id="checkout-open" data-i18n="cart.send">{t('cart.send')}</button>
+    <p class="checkout-note" data-i18n="cart.note">{t('cart.note')}</p>
+  </div>
+</aside>
+
+<!-- ─── CHECKOUT MODAL ────────────────────────────────── -->
+<div class="modal-overlay" id="checkout-modal" role="dialog" aria-modal="true" aria-label="Send enquiry">
+  <div class="modal">
+    <button class="modal-close" id="checkout-close" aria-label="Close">✕</button>
+    <h2 class="modal-title" data-i18n="checkout.title">{t('checkout.title')}</h2>
+    <p class="modal-sub" data-i18n="checkout.sub">{t('checkout.sub')}</p>
+    <div class="order-summary">
+      <div class="order-summary-title" data-i18n="checkout.summary">{t('checkout.summary')}</div>
+      <div id="checkout-items"></div>
+    </div>
+    <div class="contact-options">
+      <a href="#" class="contact-option" id="wa-link">
+        <div class="contact-icon">💬</div>
+        <div>
+          <div class="contact-label">WhatsApp</div>
+          <div class="contact-value">+62 812-3456-7890</div>
+        </div>
+        <span class="contact-arrow" aria-hidden="true">→</span>
+      </a>
+      <a href="#" class="contact-option" id="email-link">
+        <div class="contact-icon">✉</div>
+        <div>
+          <div class="contact-label">Email</div>
+          <div class="contact-value">hello@kayuart.id</div>
+        </div>
+        <span class="contact-arrow" aria-hidden="true">→</span>
+      </a>
+      <a href="https://www.instagram.com/kayuart.id" target="_blank" rel="noopener" class="contact-option">
+        <div class="contact-icon" style="font-size:0.9rem">📷</div>
+        <div>
+          <div class="contact-label">Instagram DM</div>
+          <div class="contact-value">@kayuart.id</div>
+        </div>
+        <span class="contact-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ─── INFO MODAL ────────────────────────────────────── -->
+<div class="info-modal-overlay" id="info-modal" role="dialog" aria-modal="true" aria-label="Information">
+  <div class="info-modal">
+    <button class="info-close" id="info-close" aria-label="Close">✕</button>
+
+    <!-- Sidebar tabs -->
+    <div class="info-sidebar">
+      <div class="info-sidebar-title" data-i18n="nav.information">{t('nav.information')}</div>
+      {infoTabs.map(key => (
+        <button
+          class="info-tab-btn"
+          data-tab={key}
+          aria-selected="false"
+        >
+          {t(`info.${key}` as any)}
+        </button>
+      ))}
+    </div>
+
+    <!-- Content panes -->
+    <div class="info-content">
+      {infoTabs.map(key => {
+        const item = infoContent[key];
+        return (
+          <div class="info-pane" id={`pane-${key}`} role="tabpanel">
+            <div class="info-pane-title">{lang === 'id' ? item.title_id : item.title_en}</div>
+            <div class="info-pane-sub">{lang === 'id' ? item.sub_id : item.sub_en}</div>
+            <div set:html={lang === 'id' ? item.body_id : item.body_en} />
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
+
+<script>
+import type { Lang } from '../data/i18n';
+import { ui } from '../data/i18n';
+import { infoContent } from '../data/info';
+
+// ─── Types ────────────────────────────────────────────
+interface CartItem {
+  _key: string;
+  id: number;
+  name_en: string;
+  name_id: string;
+  material_en: string;
+  material_id: string;
+  img: string;
+  price: number;
+  qty: number;
+  unit: string;
+  isBulk: boolean;
+}
+
+// ─── State ────────────────────────────────────────────
+let cart: CartItem[] = [];
+let currentLang: Lang = 'en';
+
+function t(key: string): string {
+  return (ui[currentLang] as Record<string,string>)[key]
+      ?? (ui['en'] as Record<string,string>)[key]
+      ?? key;
+}
+
+function formatPrice(n: number): string {
+  return 'Rp ' + n.toLocaleString('id-ID');
+}
+
+// ─── CART open / close ────────────────────────────────
+function openCart() {
+  document.getElementById('cart-sidebar')!.classList.add('open');
+  document.getElementById('cart-overlay')!.classList.add('open');
+  document.getElementById('cart-overlay')!.removeAttribute('aria-hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeCart() {
+  document.getElementById('cart-sidebar')!.classList.remove('open');
+  document.getElementById('cart-overlay')!.classList.remove('open');
+  document.getElementById('cart-overlay')!.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('cart-close')!.addEventListener('click', closeCart);
+document.getElementById('cart-overlay')!.addEventListener('click', closeCart);
+document.addEventListener('ka:togglecart', (e) => {
+  const detail = (e as CustomEvent).detail;
+  if (detail?.forceOpen) openCart();
+  else {
+    const isOpen = document.getElementById('cart-sidebar')!.classList.contains('open');
+    isOpen ? closeCart() : openCart();
+  }
+});
+
+// ─── RENDER CART ──────────────────────────────────────
+function renderCart() {
+  const itemsEl = document.getElementById('cart-items')!;
+  const footerEl = document.getElementById('cart-footer')!;
+  const totalEl = document.getElementById('cart-total')!;
+  const countEl = document.getElementById('cart-count')!;
+
+  const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+  countEl.textContent = String(totalQty);
+  countEl.classList.toggle('visible', totalQty > 0);
+
+  if (cart.length === 0) {
+    itemsEl.innerHTML = `
+      <div class="cart-empty">
+        <div class="cart-empty-icon">🪵</div>
+        <div class="cart-empty-text">${t('cart.empty')}</div>
+        <div class="cart-empty-sub">${t('cart.empty.sub')}</div>
+      </div>`;
+    footerEl.style.display = 'none';
+    return;
+  }
+
+  const isFCL = (unit: string) => unit === '20ft' || unit === '40ft';
+  const pricedItems = cart.filter(i => !isFCL(i.unit));
+  const calcTotal = pricedItems.reduce((s, i) => s + i.price * i.qty, 0);
+  const hasFCL = cart.some(i => isFCL(i.unit));
+
+  itemsEl.innerHTML = cart.map(item => {
+    const fcl = isFCL(item.unit);
+    const name = currentLang === 'id' ? item.name_id : item.name_en;
+    const mat  = currentLang === 'id' ? item.material_id : item.material_en;
+    const badge = item.isBulk
+      ? `<span class="bulk-badge">${fcl ? item.unit.toUpperCase() : t('cart.wholesale')}</span>`
+      : '';
+    const priceHtml = fcl
+      ? `<span class="cart-item-price-nego">${t('cart.nego')}</span>`
+      : `<span class="cart-item-price">${formatPrice(item.price * item.qty)}</span>`;
+    const step = item.isBulk ? (fcl ? 1 : 10) : 1;
+    return `
+    <div class="cart-item">
+      <img class="cart-item-img" src="${item.img}" alt="" loading="lazy">
+      <div>
+        <div class="cart-item-name">${name}${badge}</div>
+        <div class="cart-item-material">${mat}</div>
+        ${item.isBulk ? `<div class="cart-item-unit">${item.qty} ${item.unit}</div>` : ''}
+        <div class="cart-item-qty">
+          <button class="qty-btn" data-key="${item._key}" data-delta="${-step}">−</button>
+          <span>${item.qty}</span>
+          <button class="qty-btn" data-key="${item._key}" data-delta="${+step}">+</button>
+        </div>
+        <button class="cart-remove" data-key="${item._key}">${t('cart.remove')}</button>
+      </div>
+      <div>${priceHtml}</div>
+    </div>`;
+  }).join('');
+
+  totalEl.innerHTML = hasFCL
+    ? `${formatPrice(calcTotal)} <small style="font-size:0.7rem;color:var(--text-light)">+ FCL</small>`
+    : formatPrice(calcTotal);
+
+  footerEl.style.display = 'block';
+
+  // Wire qty + remove buttons
+  itemsEl.querySelectorAll<HTMLButtonElement>('.qty-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.key!;
+      const delta = parseInt(btn.dataset.delta!);
+      const item = cart.find(i => i._key === key);
+      if (item) {
+        item.qty = Math.max(1, item.qty + delta);
+        renderCart();
+      }
+    });
+  });
+  itemsEl.querySelectorAll<HTMLButtonElement>('.cart-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      cart = cart.filter(i => i._key !== btn.dataset.key);
+      renderCart();
+    });
+  });
+}
+
+// ─── CHECKOUT MODAL ───────────────────────────────────
+function openCheckout() {
+  if (cart.length === 0) return;
+  const isFCL = (unit: string) => unit === '20ft' || unit === '40ft';
+  const pricedItems = cart.filter(i => !isFCL(i.unit));
+  const fclItems = cart.filter(i => isFCL(i.unit));
+  const calcTotal = pricedItems.reduce((s, i) => s + i.price * i.qty, 0);
+
+  const itemsHtml = [
+    ...cart.map(item => {
+      const fcl = isFCL(item.unit);
+      const name = currentLang === 'id' ? item.name_id : item.name_en;
+      const badge = item.isBulk
+        ? `<span class="bulk-badge">${fcl ? item.unit.toUpperCase() : t('cart.wholesale')}</span>`
+        : '';
+      const priceStr = fcl
+        ? `<em style="color:var(--text-light);font-style:normal">${t('checkout.nego')}</em>`
+        : formatPrice(item.price * item.qty);
+      return `<div class="order-item-row">
+        <span>${name}${badge} ×${item.qty} ${item.unit}</span>
+        <span>${priceStr}</span>
+      </div>`;
+    }),
+    `<div class="order-item-row">
+      <span>Est. Total</span>
+      <span>${formatPrice(calcTotal)}${fclItems.length ? ' + FCL' : ''}</span>
+    </div>`,
+    fclItems.length ? `<p class="order-fcl-note">⚓ ${t('checkout.fcl.note')}</p>` : '',
+  ].join('');
+
+  document.getElementById('checkout-items')!.innerHTML = itemsHtml;
+
+  // Build WA message
+  const lines = cart.map(i => {
+    const fcl = isFCL(i.unit);
+    const name = currentLang === 'id' ? i.name_id : i.name_en;
+    const type = i.isBulk ? (fcl ? `[${i.unit.toUpperCase()} FCL]` : '[WHOLESALE]') : '[RETAIL]';
+    const price = fcl ? '(price on enquiry)' : formatPrice(i.price * i.qty);
+    return `- ${name} ${type} × ${i.qty} ${i.unit} = ${price}`;
+  }).join('\n');
+
+  const waMsg = encodeURIComponent(
+    `Hello KayuArt! I'd like to enquire:\n\n${lines}\n\nEst. Total: ${formatPrice(calcTotal)}${fclItems.length ? ' + FCL (negotiable)' : ''}\n\nPlease confirm pricing, availability and shipping. Thank you.`
+  );
+  (document.getElementById('wa-link') as HTMLAnchorElement).href = `https://wa.me/6281234567890?text=${waMsg}`;
+
+  const emailSubj = encodeURIComponent('KayuArt Product Enquiry');
+  const emailBody = encodeURIComponent(
+    `Hello KayuArt,\n\nI am interested in:\n\n${lines}\n\nEst. Total: ${formatPrice(calcTotal)}${fclItems.length ? ' + FCL (negotiable)' : ''}\n\nPlease confirm pricing, shipping terms, and availability.\n\nThank you.`
+  );
+  (document.getElementById('email-link') as HTMLAnchorElement).href = `mailto:hello@kayuart.id?subject=${emailSubj}&body=${emailBody}`;
+
+  closeCart();
+  document.getElementById('checkout-modal')!.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCheckout() {
+  document.getElementById('checkout-modal')!.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('checkout-open')!.addEventListener('click', openCheckout);
+document.getElementById('checkout-close')!.addEventListener('click', closeCheckout);
+document.getElementById('checkout-modal')!.addEventListener('click', (e) => {
+  if (e.target === document.getElementById('checkout-modal')) closeCheckout();
+});
+
+// ─── INFO MODAL ───────────────────────────────────────
+function openInfo(tab: string) {
+  document.getElementById('info-modal')!.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  switchInfoTab(tab);
+}
+function closeInfo() {
+  document.getElementById('info-modal')!.classList.remove('open');
+  document.body.style.overflow = '';
+}
+function switchInfoTab(tab: string) {
+  document.querySelectorAll<HTMLButtonElement>('.info-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+    btn.setAttribute('aria-selected', String(btn.dataset.tab === tab));
+  });
+  document.querySelectorAll<HTMLElement>('.info-pane').forEach(pane => {
+    pane.classList.toggle('active', pane.id === `pane-${tab}`);
+  });
+
+  // Swap content for current lang
+  const pane = document.getElementById(`pane-${tab}`)!;
+  const data = infoContent[tab as keyof typeof infoContent];
+  if (data && pane) {
+    pane.querySelector<HTMLElement>('.info-pane-title')!.textContent = currentLang === 'id' ? data.title_id : data.title_en;
+    pane.querySelector<HTMLElement>('.info-pane-sub')!.textContent = currentLang === 'id' ? data.sub_id : data.sub_en;
+    const bodyEl = pane.querySelector<HTMLElement>('.info-body');
+    if (bodyEl) bodyEl.innerHTML = currentLang === 'id' ? data.body_id : data.body_en;
+  }
+}
+
+document.getElementById('info-close')!.addEventListener('click', closeInfo);
+document.getElementById('info-modal')!.addEventListener('click', (e) => {
+  if (e.target === document.getElementById('info-modal')) closeInfo();
+});
+document.querySelectorAll<HTMLButtonElement>('.info-tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchInfoTab(btn.dataset.tab!));
+});
+
+// ─── Global events ────────────────────────────────────
+document.addEventListener('ka:cartUpdated', (e) => {
+  cart = (e as CustomEvent).detail.cart;
+  renderCart();
+});
+
+document.addEventListener('ka:openinfo', (e) => {
+  openInfo((e as CustomEvent).detail.tab);
+});
+
+document.addEventListener('ka:setlang', (e) => {
+  currentLang = (e as CustomEvent).detail.lang as Lang;
+  // Re-render cart with new lang
+  renderCart();
+  // Re-translate static UI keys in panels
+  document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n!);
+  });
+});
+
+// ─── Escape key closes all ────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  closeCart();
+  closeCheckout();
+  closeInfo();
+});
+
+// ─── Init info panes ──────────────────────────────────
+// Wrap body content in .info-body div so JS can swap it
+document.querySelectorAll<HTMLElement>('.info-pane').forEach(pane => {
+  const title = pane.querySelector('.info-pane-title');
+  const sub = pane.querySelector('.info-pane-sub');
+  if (!title || !sub) return;
+  // Collect remaining nodes as body
+  const bodyDiv = document.createElement('div');
+  bodyDiv.className = 'info-body';
+  const nodes = Array.from(pane.childNodes).filter(n => n !== title && n !== sub);
+  nodes.forEach(n => bodyDiv.appendChild(n));
+  pane.appendChild(bodyDiv);
+});
+</script>

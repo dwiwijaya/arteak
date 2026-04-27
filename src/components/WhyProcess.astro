@@ -1,0 +1,149 @@
+---
+import { useTranslations, type Lang } from '../data/i18n';
+
+export interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const whyItems = [1,2,3,4,5,6] as const;
+const processItems = [1,2,3,4] as const;
+---
+
+<!-- ─── WHY SECTION ──────────────────────────────────── -->
+<section id="why" class="section section--dark why-section">
+  <div class="section-tag why-tag" data-i18n="why.tag">{t('why.tag')}</div>
+  <h2 class="section-title why-title" data-i18n="why.title">{t('why.title')}</h2>
+
+  <div class="why-grid">
+    {whyItems.map(n => (
+      <div class="why-item fade-up">
+        <div class="why-num">0{n}</div>
+        <div class="why-item-title" data-i18n={`why.${n}.title`}>{t(`why.${n}.title` as any)}</div>
+        <div class="why-item-desc" data-i18n={`why.${n}.desc`}>{t(`why.${n}.desc` as any)}</div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<!-- ─── PROCESS SECTION ─────────────────────────────── -->
+<section id="process" class="section section--cream process-section">
+  <div class="process-header">
+    <div class="section-tag" data-i18n="proc.tag">{t('proc.tag')}</div>
+    <h2 class="section-title" data-i18n="proc.title">{t('proc.title')}</h2>
+  </div>
+
+  <div class="process-steps">
+    {processItems.map(n => (
+      <div class="process-step fade-up">
+        <div class="step-num">{['I','II','III','IV'][n-1]}</div>
+        <div class="step-title" data-i18n={`proc.${n}.title`}>{t(`proc.${n}.title` as any)}</div>
+        <div class="step-desc" data-i18n={`proc.${n}.desc`}>{t(`proc.${n}.desc` as any)}</div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+/* ─── WHY ─────────────────────────────────────────────── */
+.why-section { position: relative; overflow: hidden; }
+.why-section::before {
+  content: '';
+  position: absolute;
+  right: -5%; top: -10%;
+  width: 50%; height: 120%;
+  background: radial-gradient(ellipse, rgba(196,133,58,0.06) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.why-tag { color: rgba(196,133,58,0.85); margin-bottom: 0.8rem; }
+.why-title { color: var(--cream); margin-bottom: 4rem; }
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4rem 3rem;
+}
+
+.why-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.8rem;
+  font-weight: 300;
+  color: var(--wood-accent);
+  opacity: 0.45;
+  line-height: 1;
+  margin-bottom: 0.8rem;
+}
+.why-item-title {
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(245,240,232,0.65);
+  margin-bottom: 0.5rem;
+}
+.why-item-desc {
+  font-size: 0.83rem;
+  line-height: 1.85;
+  color: rgba(245,240,232,0.38);
+}
+
+/* ─── PROCESS ─────────────────────────────────────────── */
+.process-header { text-align: center; margin-bottom: 4rem; }
+.process-header .section-tag { justify-content: center; }
+.process-header .section-tag::before { display: none; }
+
+.process-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  position: relative;
+  gap: 0;
+}
+.process-steps::before {
+  content: '';
+  position: absolute;
+  top: 2rem;
+  left: 12%; right: 12%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--wood-light), transparent);
+}
+
+.process-step {
+  text-align: center;
+  padding: 0 1.5rem;
+}
+.step-num {
+  width: 4rem; height: 4rem;
+  border: 1px solid var(--wood-light);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: var(--wood-accent);
+  margin: 0 auto 1.4rem;
+  background: var(--cream);
+  position: relative;
+  z-index: 1;
+}
+.step-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.05rem;
+  color: var(--wood-dark);
+  margin-bottom: 0.5rem;
+}
+.step-desc {
+  font-size: 0.78rem;
+  line-height: 1.75;
+  color: var(--text-sub);
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────── */
+@media (max-width: 900px) {
+  .why-grid { grid-template-columns: 1fr 1fr; gap: 3rem 2rem; }
+  .process-steps { grid-template-columns: 1fr 1fr; gap: 3rem 2rem; }
+  .process-steps::before { display: none; }
+}
+@media (max-width: 600px) {
+  .why-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+  .process-steps { grid-template-columns: 1fr 1fr; }
+}
+</style>

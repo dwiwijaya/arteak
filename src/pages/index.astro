@@ -1,0 +1,49 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import Marquee from '../components/Marquee.astro';
+import Collections from '../components/Collections.astro';
+import Products from '../components/Products.astro';
+import WhyProcess from '../components/WhyProcess.astro';
+import Footer from '../components/Footer.astro';
+import Panels from '../components/Panels.astro';
+import type { Lang } from '../data/i18n';
+
+// Default language — could be from cookie/header in SSR mode
+const lang: Lang = 'en';
+---
+
+<Base>
+  <!-- Fixed UI panels (cart, checkout, info modals) -->
+  <Panels lang={lang} />
+
+  <!-- Page -->
+  <Nav lang={lang} />
+  <main>
+    <Hero lang={lang} />
+    <Marquee lang={lang} />
+    <Collections lang={lang} />
+    <Products lang={lang} />
+    <WhyProcess lang={lang} />
+  </main>
+  <Footer lang={lang} />
+</Base>
+
+<script>
+  // ─── Global fade-up observer ───────────────────────
+  function observeFadeUp() {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          (e.target as HTMLElement).classList.add('visible');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.fade-up:not(.visible)').forEach(el => obs.observe(el));
+  }
+  observeFadeUp();
+  // Re-run after dynamic renders
+  document.addEventListener('ka:filter', () => setTimeout(observeFadeUp, 50));
+</script>

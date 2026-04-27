@@ -1,0 +1,90 @@
+---
+import { useTranslations, type Lang } from '../data/i18n';
+
+export interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const items = ['marquee.1','marquee.2','marquee.3','marquee.4','marquee.5','marquee.6'] as const;
+---
+
+<!-- Marquee -->
+<div class="marquee-bar" aria-hidden="true">
+  <div class="marquee-track">
+    {[...items, ...items].map((key) => (
+      <>
+        <span class="marquee-text" data-i18n={key}>{t(key)}</span>
+        <span class="marquee-dot">✦</span>
+      </>
+    ))}
+  </div>
+</div>
+
+<!-- Shipping strip -->
+<div class="shipping-strip" aria-label="Shipping information">
+  <span>
+    🚢&nbsp;<strong data-i18n="strip.ship">{t('strip.ship')}</strong>
+    &nbsp;—&nbsp;
+    <span data-i18n="strip.ship.sub">{t('strip.ship.sub')}</span>
+  </span>
+  <span>
+    📦&nbsp;<strong data-i18n="strip.deal">{t('strip.deal')}</strong>
+    &nbsp;—&nbsp;
+    <span data-i18n="strip.deal.sub">{t('strip.deal.sub')}</span>
+  </span>
+  <span>
+    🤝&nbsp;<strong data-i18n="strip.personal">{t('strip.personal')}</strong>
+    &nbsp;—&nbsp;
+    <span data-i18n="strip.personal.sub">{t('strip.personal.sub')}</span>
+  </span>
+</div>
+
+<style>
+/* ─── MARQUEE ─────────────────────────────────────────── */
+.marquee-bar {
+  overflow: hidden;
+  background: var(--wood-dark);
+  padding: 0.9rem 0;
+  white-space: nowrap;
+}
+.marquee-track {
+  display: inline-flex;
+  animation: marquee 32s linear infinite;
+}
+.marquee-text {
+  font-size: 0.63rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(245,240,232,0.55);
+  padding: 0 2.5rem;
+}
+.marquee-dot {
+  color: var(--wood-accent);
+  font-size: 0.55rem;
+  opacity: 0.7;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ─── SHIPPING STRIP ──────────────────────────────────── */
+.shipping-strip {
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 5rem;
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-sub);
+}
+.shipping-strip strong { color: var(--wood-dark); font-weight: 500; }
+
+@media (max-width: 768px) {
+  .shipping-strip { padding: 0.75rem 1.5rem; gap: 1rem; flex-direction: column; align-items: center; text-align: center; }
+}
+</style>

@@ -1,0 +1,463 @@
+---
+import { useTranslations, type Lang } from '../data/i18n';
+import type { Category } from '../data/products';
+
+export interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const collectionLinks: { id: Category; key: string }[] = [
+  { id: 'washbasin-designer', key: 'cat.washbasin-designer' },
+  { id: 'washbasin-root',     key: 'cat.washbasin-root' },
+  { id: 'washbasin-stone',    key: 'cat.washbasin-stone' },
+  { id: 'countertop',         key: 'cat.countertop' },
+  { id: 'cabinet',            key: 'cat.cabinet' },
+  { id: 'mirror',             key: 'cat.mirror' },
+  { id: 'bath-accessory',     key: 'cat.bath-accessory' },
+  { id: 'home-accessory',     key: 'cat.home-accessory' },
+];
+
+const infoLinks = [
+  'sightseeing','quality','care','installation','sustainability','teak','payment','shipping',
+] as const;
+---
+
+<nav id="site-nav">
+  <!-- Logo -->
+  <a href="#" class="nav-logo">KAYU<span>ART</span></a>
+
+  <!-- Desktop links -->
+  <ul class="nav-links" role="menubar">
+    <!-- Collections dropdown -->
+    <li role="none">
+      <button
+        class="nav-drop-trigger"
+        aria-haspopup="true"
+        aria-expanded="false"
+        aria-controls="dropdown-collections"
+      >
+        {t('nav.collections')}
+        <span class="nav-drop-arrow" aria-hidden="true">▾</span>
+      </button>
+      <div class="nav-dropdown" id="dropdown-collections" role="menu">
+        {collectionLinks.map(({ id, key }) => (
+          <a
+            href="#products"
+            role="menuitem"
+            data-filter={id}
+            class="dropdown-filter-link"
+          >
+            {t(key as any)}
+          </a>
+        ))}
+      </div>
+    </li>
+
+    <!-- Information dropdown -->
+    <li role="none">
+      <button
+        class="nav-drop-trigger"
+        aria-haspopup="true"
+        aria-expanded="false"
+        aria-controls="dropdown-info"
+      >
+        {t('nav.information')}
+        <span class="nav-drop-arrow" aria-hidden="true">▾</span>
+      </button>
+      <div class="nav-dropdown" id="dropdown-info" role="menu">
+        {infoLinks.map((key) => (
+          <button
+            class="dropdown-info-link"
+            role="menuitem"
+            data-tab={key}
+          >
+            {t(`info.${key}` as any)}
+          </button>
+        ))}
+      </div>
+    </li>
+
+    <li role="none">
+      <a href="#why" class="nav-link-plain">{t('nav.craft')}</a>
+    </li>
+  </ul>
+
+  <!-- Right controls -->
+  <div class="nav-right">
+    <!-- Language toggle -->
+    <div class="lang-toggle" role="group" aria-label="Language">
+      <button
+        class={`lang-btn ${lang === 'en' ? 'active' : ''}`}
+        data-lang="en"
+        aria-pressed={lang === 'en'}
+      >EN</button>
+      <span class="lang-sep" aria-hidden="true">|</span>
+      <button
+        class={`lang-btn ${lang === 'id' ? 'active' : ''}`}
+        data-lang="id"
+        aria-pressed={lang === 'id'}
+      >ID</button>
+    </div>
+
+    <!-- Cart button -->
+    <button class="cart-trigger" id="cart-trigger" aria-label="Open enquiry list">
+      <svg width="18" height="16" viewBox="0 0 18 16" fill="none" aria-hidden="true">
+        <path d="M1 1h2.5l2.1 9h8.4l1.5-6H5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="8" cy="14.5" r="1" fill="currentColor"/>
+        <circle cx="14" cy="14.5" r="1" fill="currentColor"/>
+      </svg>
+      <span class="cart-trigger-label">{t('nav.cart')}</span>
+      <span class="cart-count" id="cart-count" aria-live="polite">0</span>
+    </button>
+
+    <!-- Hamburger -->
+    <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation menu">
+  <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">✕</button>
+  {collectionLinks.map(({ id, key }) => (
+    <a href="#products" class="mobile-menu-link dropdown-filter-link" data-filter={id}>
+      {t(key as any)}
+    </a>
+  ))}
+  <hr class="mobile-menu-divider" />
+  {infoLinks.map((key) => (
+    <button class="mobile-menu-link dropdown-info-link" data-tab={key}>
+      {t(`info.${key}` as any)}
+    </button>
+  ))}
+  <hr class="mobile-menu-divider" />
+  <a href="#why" class="mobile-menu-link">{t('nav.craft')}</a>
+</div>
+
+<style>
+/* ─── NAV BASE ───────────────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 0 3rem;
+  height: var(--nav-h);
+  background: rgba(250, 248, 244, 0.93);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--wood-dark);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+.nav-logo span { color: var(--wood-accent); }
+
+/* ─── DESKTOP LINKS ──────────────────────────────────── */
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 2.5rem;
+  align-items: stretch;
+  margin: 0;
+  padding: 0;
+}
+.nav-links > li {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.nav-drop-trigger,
+.nav-link-plain {
+  background: none;
+  border: none;
+  font-family: 'Jost', sans-serif;
+  font-weight: 300;
+  font-size: 0.73rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0;        /* vertical hit zone bridges the gap */
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+.nav-drop-trigger:hover,
+.nav-link-plain:hover { color: var(--wood-accent); }
+
+.nav-drop-arrow {
+  font-size: 0.5rem;
+  transition: transform 0.2s;
+  display: inline-block;
+  pointer-events: none;
+}
+.nav-links > li:hover .nav-drop-arrow { transform: rotate(180deg); }
+
+/* ─── DROPDOWN ───────────────────────────────────────── */
+.nav-dropdown {
+  position: absolute;
+  top: 100%;                /* flush to bottom of nav */
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  background: var(--warm-white);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--wood-accent);
+  box-shadow: 0 16px 48px rgba(44, 31, 14, 0.12);
+  min-width: 230px;
+  padding: 0.4rem 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 201;
+}
+
+/* invisible bridge so mouse reaching dropdown doesn't lose li:hover */
+.nav-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 0; right: 0;
+  height: 10px;
+}
+
+.nav-links > li:hover .nav-dropdown,
+.nav-links > li:focus-within .nav-dropdown {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateX(-50%) translateY(0);
+}
+
+.nav-dropdown a,
+.nav-dropdown button.dropdown-info-link {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  padding: 0.55rem 1.2rem;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.07em;
+  color: var(--text-sub);
+  text-decoration: none;
+  background: none;
+  border: none;
+  text-align: left;
+  white-space: nowrap;
+  transition: color 0.15s, background 0.15s, padding-left 0.15s;
+}
+.nav-dropdown a:hover,
+.nav-dropdown button.dropdown-info-link:hover {
+  color: var(--wood-accent);
+  background: rgba(196,133,58,0.05);
+  padding-left: 1.6rem;
+}
+
+/* ─── RIGHT CONTROLS ─────────────────────────────────── */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.lang-toggle { display: flex; align-items: center; gap: 0.3rem; }
+.lang-sep { color: var(--border); font-size: 0.8rem; }
+.lang-btn {
+  background: none;
+  border: none;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--text-light);
+  padding: 0.2rem 0.3rem;
+  transition: color 0.2s;
+  border-bottom: 1px solid transparent;
+}
+.lang-btn:hover { color: var(--text-sub); }
+.lang-btn.active { color: var(--wood-accent); border-bottom-color: var(--wood-accent); }
+
+.cart-trigger {
+  position: relative;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--wood-dark);
+  transition: color 0.2s;
+}
+.cart-trigger:hover { color: var(--wood-accent); }
+.cart-count {
+  position: absolute;
+  top: -6px; right: -10px;
+  background: var(--wood-accent);
+  color: white;
+  border-radius: 50%;
+  width: 16px; height: 16px;
+  font-size: 0.58rem;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 500;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.2s;
+}
+.cart-count.visible { opacity: 1; transform: scale(1); }
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 4px;
+}
+.hamburger span {
+  display: block;
+  width: 22px; height: 1.5px;
+  background: var(--wood-dark);
+  transition: all 0.3s;
+}
+
+/* ─── MOBILE MENU ────────────────────────────────────── */
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  background: var(--warm-white);
+  z-index: 150;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 5rem 2.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  overflow-y: auto;
+}
+.mobile-menu.open { transform: translateX(0); }
+
+.mobile-menu-close {
+  position: absolute;
+  top: 1.2rem; right: 1.5rem;
+  background: none; border: none;
+  font-size: 1.2rem;
+  color: var(--text-light);
+}
+
+.mobile-menu-link {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  font-weight: 300;
+  color: var(--wood-dark);
+  text-decoration: none;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+  display: block;
+  width: 100%;
+  transition: color 0.2s;
+}
+.mobile-menu-link:hover { color: var(--wood-accent); }
+
+.mobile-menu-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0.5rem 0;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────── */
+@media (max-width: 900px) {
+  nav { padding: 0 1.5rem; }
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+  .cart-trigger-label { display: none; }
+}
+</style>
+
+<script>
+  // ─── Dropdown keyboard accessibility ──────────────────
+  document.querySelectorAll<HTMLButtonElement>('.nav-drop-trigger').forEach(trigger => {
+    trigger.addEventListener('click', () => {
+      const expanded = trigger.getAttribute('aria-expanded') === 'true';
+      trigger.setAttribute('aria-expanded', String(!expanded));
+    });
+  });
+
+  // ─── Hamburger ────────────────────────────────────────
+  const hamburger = document.getElementById('hamburger')!;
+  const mobileMenu = document.getElementById('mobile-menu')!;
+  const mobileClose = document.getElementById('mobile-menu-close')!;
+
+  function openMobileMenu() {
+    mobileMenu.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    hamburger.setAttribute('aria-expanded', 'true');
+  }
+  function closeMobileMenu() {
+    mobileMenu.classList.remove('open');
+    document.body.style.overflow = '';
+    hamburger.setAttribute('aria-expanded', 'false');
+  }
+  hamburger.addEventListener('click', openMobileMenu);
+  mobileClose.addEventListener('click', closeMobileMenu);
+
+  // Close on link click
+  mobileMenu.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('click', closeMobileMenu);
+  });
+
+  // ─── Language switch ──────────────────────────────────
+  document.querySelectorAll<HTMLButtonElement>('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.lang as 'en' | 'id';
+      document.dispatchEvent(new CustomEvent('ka:setlang', { detail: { lang } }));
+      document.querySelectorAll('.lang-btn').forEach(b => {
+        b.classList.toggle('active', (b as HTMLButtonElement).dataset.lang === lang);
+        b.setAttribute('aria-pressed', String((b as HTMLButtonElement).dataset.lang === lang));
+      });
+    });
+  });
+
+  // ─── Filter links ─────────────────────────────────────
+  document.querySelectorAll<HTMLAnchorElement>('.dropdown-filter-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const filter = link.dataset.filter!;
+      document.dispatchEvent(new CustomEvent('ka:filter', { detail: { filter } }));
+      document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // ─── Info tab links ───────────────────────────────────
+  document.querySelectorAll<HTMLButtonElement>('.dropdown-info-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab!;
+      document.dispatchEvent(new CustomEvent('ka:openinfo', { detail: { tab } }));
+    });
+  });
+
+  // ─── Cart trigger ─────────────────────────────────────
+  document.getElementById('cart-trigger')!.addEventListener('click', () => {
+    document.dispatchEvent(new CustomEvent('ka:togglecart'));
+  });
+</script>

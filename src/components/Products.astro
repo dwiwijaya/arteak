@@ -1,0 +1,510 @@
+---
+import { useTranslations, type Lang } from '../data/i18n';
+import { products, type Category } from '../data/products';
+
+export interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const filterKeys: { id: string; key: string }[] = [
+  { id: 'all',                key: 'filter.all' },
+  { id: 'washbasin-designer', key: 'cat.washbasin-designer' },
+  { id: 'washbasin-root',     key: 'cat.washbasin-root' },
+  { id: 'washbasin-stone',    key: 'cat.washbasin-stone' },
+  { id: 'countertop',         key: 'cat.countertop' },
+  { id: 'cabinet',            key: 'cat.cabinet' },
+  { id: 'mirror',             key: 'cat.mirror' },
+  { id: 'bath-accessory',     key: 'cat.bath-accessory' },
+  { id: 'home-accessory',     key: 'cat.home-accessory' },
+];
+---
+
+<section id="products" class="section">
+  <div class="prod-header">
+    <div class="section-tag" data-i18n="section.products">{t('section.products')}</div>
+    <h2 class="section-title" data-i18n="section.products.title">{t('section.products.title')}</h2>
+  </div>
+
+  <!-- Order type toggle -->
+  <div class="order-banner">
+    <span class="order-label" data-i18n="ordertype.label">{t('ordertype.label')}</span>
+    <div class="order-btns">
+      <button class="order-btn active" id="btn-retail" data-type="retail" data-i18n="ordertype.retail">
+        {t('ordertype.retail')}
+      </button>
+      <button class="order-btn" id="btn-bulk" data-type="bulk" data-i18n="ordertype.bulk">
+        {t('ordertype.bulk')}
+      </button>
+    </div>
+    <span class="order-note" id="order-note" data-i18n="ordertype.note.retail">
+      {t('ordertype.note.retail')}
+    </span>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar" role="group" aria-label="Filter by category">
+    {filterKeys.map(({ id, key }) => (
+      <button
+        class={`filter-btn ${id === 'all' ? 'active' : ''}`}
+        data-filter={id}
+        data-i18n={key}
+        aria-pressed={id === 'all'}
+      >
+        {t(key as any)}
+      </button>
+    ))}
+  </div>
+
+  <!-- Product grid (server-rendered, JS hides/shows) -->
+  <div class="products-grid" id="products-grid">
+    {products.map((p) => (
+      <article
+        class="product-card fade-up"
+        data-category={p.category}
+        data-id={p.id}
+        data-price={p.price}
+        data-name-en={p.name_en}
+        data-name-id={p.name_id}
+        data-material-en={p.material_en}
+        data-material-id={p.material_id}
+        data-img={p.img}
+      >
+        <div class="product-img-wrap">
+          <img
+            src={p.img}
+            alt={lang === 'id' ? p.name_id : p.name_en}
+            class="product-img"
+            loading="lazy"
+          />
+          {p.badge && <span class="product-badge">{p.badge}</span>}
+
+          <!-- Add area: retail mode -->
+          <div class="add-area add-area--retail">
+            <button class="add-retail-btn" aria-label="Add to enquiry">
+              + <span data-i18n="product.add">{t('product.add')}</span>
+            </button>
+          </div>
+
+          <!-- Add area: bulk mode -->
+          <div class="add-area add-area--bulk">
+            <input
+              class="bulk-qty"
+              type="number"
+              min="1"
+              value="100"
+              placeholder="Qty"
+              aria-label="Quantity"
+            />
+            <select class="bulk-unit" aria-label="Unit">
+              <option value="pcs">pcs</option>
+              <option value="sets">sets</option>
+              <option value="20ft">20ft FCL</option>
+              <option value="40ft">40ft FCL</option>
+            </select>
+            <button class="bulk-add-btn" aria-label="Add bulk order">→</button>
+          </div>
+        </div>
+
+        <div class="product-meta">
+          <div>
+            <div class="product-name">{lang === 'id' ? p.name_id : p.name_en}</div>
+            <div class="product-material">{lang === 'id' ? p.material_id : p.material_en}</div>
+          </div>
+          <div class="product-price">Rp {p.price.toLocaleString('id-ID')}</div>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<style>
+.prod-header { margin-bottom: 2rem; }
+
+/* ─── ORDER BANNER ────────────────────────────────────── */
+.order-banner {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  padding: 0.9rem 1.4rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+}
+.order-label {
+  font-size: 0.63rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+.order-btns { display: flex; gap: 0.4rem; }
+.order-btn {
+  background: none;
+  border: 1px solid var(--border);
+  padding: 0.4rem 1rem;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-sub);
+  transition: all 0.2s;
+}
+.order-btn:hover { border-color: var(--wood-dark); color: var(--wood-dark); }
+.order-btn.active { background: var(--wood-dark); color: var(--cream); border-color: var(--wood-dark); }
+.order-note {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  margin-left: auto;
+  line-height: 1.4;
+}
+
+/* ─── FILTER BAR ──────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+.filter-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-sub);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.45rem 1rem;
+  transition: all 0.2s;
+}
+.filter-btn:hover { border-color: var(--wood-dark); color: var(--wood-dark); }
+.filter-btn.active { background: var(--wood-dark); color: var(--cream); border-color: var(--wood-dark); }
+
+/* ─── PRODUCT GRID ────────────────────────────────────── */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem 2rem;
+}
+
+.product-card {
+  transition: transform 0.3s ease;
+}
+.product-card:hover { transform: translateY(-6px); }
+.product-card[hidden] { display: none; }
+
+.product-img-wrap {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3/4;
+  background: var(--grain);
+  margin-bottom: 1rem;
+}
+.product-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+  filter: sepia(5%);
+  display: block;
+}
+.product-card:hover .product-img { transform: scale(1.04); }
+
+.product-badge {
+  position: absolute;
+  top: 0.8rem; left: 0.8rem;
+  background: var(--wood-accent);
+  color: white;
+  font-size: 0.58rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+}
+
+/* ─── ADD AREAS ───────────────────────────────────────── */
+.add-area {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  display: flex;
+  align-items: stretch;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+.product-card:hover .add-area { opacity: 1; transform: translateY(0); }
+
+/* Toggle visibility via body class */
+body.bulk-mode .add-area--retail { display: none; }
+body:not(.bulk-mode) .add-area--bulk { display: none; }
+
+.add-retail-btn {
+  flex: 1;
+  background: var(--wood-dark);
+  color: var(--cream);
+  border: none;
+  padding: 0.75rem 1rem;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: background 0.2s;
+}
+.add-retail-btn:hover { background: var(--wood-accent); }
+
+.bulk-qty {
+  width: 58px;
+  background: var(--wood-dark);
+  color: white;
+  border: none;
+  border-right: 1px solid rgba(255,255,255,0.12);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.82rem;
+  text-align: center;
+  padding: 0.7rem 0.4rem;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.bulk-qty::-webkit-inner-spin-button,
+.bulk-qty::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+.bulk-unit {
+  flex: 1;
+  background: var(--wood-dark);
+  color: rgba(255,255,255,0.7);
+  border: none;
+  border-right: 1px solid rgba(255,255,255,0.12);
+  font-family: 'Jost', sans-serif;
+  font-size: 0.62rem;
+  padding: 0.7rem 0.3rem;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: center;
+}
+.bulk-unit option { background: var(--wood-dark); }
+
+.bulk-add-btn {
+  background: var(--wood-dark);
+  border: none;
+  color: white;
+  padding: 0.7rem 0.9rem;
+  font-size: 1rem;
+  transition: color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+.bulk-add-btn:hover { color: var(--wood-accent); background: rgba(44,31,14,0.85); }
+
+/* ─── PRODUCT META ────────────────────────────────────── */
+.product-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.product-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--wood-dark);
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
+}
+.product-material {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-light);
+}
+.product-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--wood-accent);
+  white-space: nowrap;
+}
+
+/* ─── RESPONSIVE ─────────────────────────────────────── */
+@media (max-width: 1000px) {
+  .products-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .products-grid { grid-template-columns: 1fr 1fr; gap: 1.2rem 0.8rem; }
+  .filter-bar { gap: 0.3rem; }
+  .filter-btn { font-size: 0.6rem; padding: 0.35rem 0.7rem; }
+  .order-note { display: none; }
+}
+@media (max-width: 420px) {
+  .products-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<script>
+import type { Lang } from '../data/i18n';
+import { ui } from '../data/i18n';
+
+// ─── State ────────────────────────────────────────────
+let currentFilter = 'all';
+let currentOrderType: 'retail' | 'bulk' = 'retail';
+let currentLang: Lang = (document.documentElement.lang as Lang) || 'en';
+
+function t(key: string): string {
+  return (ui[currentLang] as Record<string, string>)[key]
+      ?? (ui['en'] as Record<string, string>)[key]
+      ?? key;
+}
+
+// ─── Filter ───────────────────────────────────────────
+function applyFilter(filter: string) {
+  currentFilter = filter;
+  const cards = document.querySelectorAll<HTMLElement>('.product-card');
+  cards.forEach(card => {
+    const cat = card.dataset.category!;
+    const show = filter === 'all' || cat === filter;
+    card.hidden = !show;
+  });
+  // Update filter buttons
+  document.querySelectorAll<HTMLButtonElement>('.filter-btn').forEach(btn => {
+    const active = btn.dataset.filter === filter;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-pressed', String(active));
+  });
+  observeFadeUp();
+}
+
+// ─── Order type ───────────────────────────────────────
+function setOrderType(type: 'retail' | 'bulk') {
+  currentOrderType = type;
+  document.getElementById('btn-retail')!.classList.toggle('active', type === 'retail');
+  document.getElementById('btn-bulk')!.classList.toggle('active', type === 'bulk');
+  document.body.classList.toggle('bulk-mode', type === 'bulk');
+
+  const noteEl = document.getElementById('order-note')!;
+  const noteKey = type === 'bulk' ? 'ordertype.note.bulk' : 'ordertype.note.retail';
+  noteEl.dataset.i18n = noteKey;
+  noteEl.textContent = t(noteKey);
+}
+
+// ─── Translate all [data-i18n] ────────────────────────
+function applyTranslations() {
+  document.querySelectorAll<HTMLElement>('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n!;
+    el.textContent = t(key);
+  });
+  // Update product card names/materials
+  document.querySelectorAll<HTMLElement>('.product-card').forEach(card => {
+    const nameEl = card.querySelector<HTMLElement>('.product-name');
+    const matEl  = card.querySelector<HTMLElement>('.product-material');
+    if (nameEl) nameEl.textContent = currentLang === 'id' ? card.dataset.nameId! : card.dataset.nameEn!;
+    if (matEl)  matEl.textContent  = currentLang === 'id' ? card.dataset.materialId! : card.dataset.materialEn!;
+  });
+}
+
+// ─── Fade-up observer ─────────────────────────────────
+function observeFadeUp() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        (e.target as HTMLElement).classList.add('visible');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fade-up:not(.visible)').forEach(el => obs.observe(el));
+}
+
+// ─── Cart helpers ──────────────────────────────────────
+interface CartItem {
+  _key: string;
+  id: number;
+  name_en: string;
+  name_id: string;
+  material_en: string;
+  material_id: string;
+  img: string;
+  price: number;
+  qty: number;
+  unit: string;
+  isBulk: boolean;
+}
+
+let cart: CartItem[] = [];
+
+function addToCart(card: HTMLElement, qty: number, unit: string, isBulk: boolean) {
+  const id = Number(card.dataset.id);
+  const key = `${id}|${unit}|${isBulk ? 'bulk' : 'retail'}`;
+  const existing = cart.find(i => i._key === key);
+  if (existing) {
+    existing.qty += qty;
+  } else {
+    cart.push({
+      _key: key, id,
+      name_en: card.dataset.nameEn!,
+      name_id: card.dataset.nameId!,
+      material_en: card.dataset.materialEn!,
+      material_id: card.dataset.materialId!,
+      img: card.dataset.img!,
+      price: Number(card.dataset.price),
+      qty, unit, isBulk,
+    });
+  }
+  document.dispatchEvent(new CustomEvent('ka:cartUpdated', { detail: { cart } }));
+  document.dispatchEvent(new CustomEvent('ka:togglecart', { detail: { forceOpen: true } }));
+}
+
+// ─── Wire product buttons ──────────────────────────────
+function wireProductButtons() {
+  document.querySelectorAll<HTMLElement>('.product-card').forEach(card => {
+    // Retail button
+    const retailBtn = card.querySelector<HTMLButtonElement>('.add-retail-btn');
+    retailBtn?.addEventListener('click', () => {
+      addToCart(card, 1, 'pcs', false);
+      const span = retailBtn.querySelector('span')!;
+      const orig = span.textContent;
+      span.textContent = t('product.added');
+      retailBtn.style.background = 'var(--wood-accent)';
+      setTimeout(() => {
+        span.textContent = orig;
+        retailBtn.style.background = '';
+      }, 1400);
+    });
+
+    // Bulk button
+    const bulkBtn = card.querySelector<HTMLButtonElement>('.bulk-add-btn');
+    bulkBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const qtyEl = card.querySelector<HTMLInputElement>('.bulk-qty')!;
+      const unitEl = card.querySelector<HTMLSelectElement>('.bulk-unit')!;
+      const qty = parseInt(qtyEl.value) || 100;
+      const unit = unitEl.value;
+      addToCart(card, qty, unit, true);
+      bulkBtn.textContent = '✓';
+      bulkBtn.style.color = 'var(--wood-accent)';
+      setTimeout(() => { bulkBtn.textContent = '→'; bulkBtn.style.color = ''; }, 1400);
+    });
+  });
+}
+
+// ─── Event listeners ──────────────────────────────────
+document.addEventListener('ka:filter', (e) => {
+  applyFilter((e as CustomEvent).detail.filter);
+});
+
+document.addEventListener('ka:setlang', (e) => {
+  currentLang = (e as CustomEvent).detail.lang as Lang;
+  applyTranslations();
+});
+
+document.querySelectorAll<HTMLButtonElement>('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => applyFilter(btn.dataset.filter!));
+});
+
+document.getElementById('btn-retail')!.addEventListener('click', () => setOrderType('retail'));
+document.getElementById('btn-bulk')!.addEventListener('click', () => setOrderType('bulk'));
+
+// ─── Init ─────────────────────────────────────────────
+applyFilter('all');
+wireProductButtons();
+observeFadeUp();
+
+// Export cart to window so other components can access
+(window as any).__kayuart = { getCart: () => cart, getLang: () => currentLang };
+</script>

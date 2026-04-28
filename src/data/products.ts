@@ -175,7 +175,7 @@ export const products: Product[] = [
 export const categories: { id: Category; img: string; spanX?: boolean; spanY?: boolean }[] = [
   {
     id: 'washbasin-designer',
-    img: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&q=80',
+    img: '',
     spanX: true,
     spanY: true,
   },

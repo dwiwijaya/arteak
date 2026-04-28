@@ -27,6 +27,7 @@ const filterKeys: { id: string; key: string }[] = [
   <div class="prod-header">
     <div class="section-tag" data-i18n="section.products">{t('section.products')}</div>
     <h2 class="section-title" data-i18n="section.products.title">{t('section.products.title')}</h2>
+    <p class="products-hero__sub" data-i18n="products.page.sub">{t('products.page.sub')}</p>
   </div>
 
   <!-- Order type toggle -->
@@ -122,12 +123,19 @@ const filterKeys: { id: string; key: string }[] = [
         </div>
 
         <div class="product-meta">
-          <div>
+          <div class="product-copy">
             <div class="product-name">{lang === 'id' ? p.name_id : p.name_en}</div>
             <div class="product-material">{lang === 'id' ? p.material_id : p.material_en}</div>
           </div>
-          <div class="product-price">Rp {p.price.toLocaleString('id-ID')}</div>
         </div>
+        {p.dimensions && (
+          <div class="product-specs" aria-label="Product dimensions">
+            <span><strong>W</strong> {p.dimensions.width}</span>
+            <span><strong>D</strong> {p.dimensions.depth}</span>
+            <span><strong>H</strong> {p.dimensions.height}</span>
+          </div>
+        )}
+        <div class="product-price">Rp {p.price.toLocaleString('id-ID')}</div>
       </article>
     ))}
   </div>
@@ -340,10 +348,11 @@ body:not(.bulk-mode) .add-area--bulk { display: none; }
 
 /* ─── PRODUCT META ────────────────────────────────────── */
 .product-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.product-copy {
+  min-width: 0;
 }
 .product-name {
   font-family: 'Cormorant Garamond', serif;
@@ -359,6 +368,24 @@ body:not(.bulk-mode) .add-area--bulk { display: none; }
   text-transform: uppercase;
   color: var(--text-light);
 }
+
+.product-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  padding-top: 0.5rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.63rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-sub);
+}
+
+.product-specs strong {
+  font-weight: 500;
+  color: var(--wood-dark);
+}
+
 .product-price {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1rem;
@@ -376,6 +403,7 @@ body:not(.bulk-mode) .add-area--bulk { display: none; }
   .filter-bar { gap: 0.3rem; }
   .filter-btn { font-size: 0.6rem; padding: 0.35rem 0.7rem; }
   .order-note { display: none; }
+  .product-specs { gap: 0.2rem 0.55rem; }
 }
 @media (max-width: 420px) {
   .products-grid { grid-template-columns: 1fr; }

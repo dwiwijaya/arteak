@@ -16,6 +16,11 @@ export interface Product {
   name_id: string;
   material_en: string;
   material_id: string;
+  dimensions?: {
+    width: string;
+    depth: string;
+    height: string;
+  };
   price: number;
   img: string;
 }
@@ -29,6 +34,7 @@ export const products: Product[] = [
     name_id: 'Wastafel Desainer Jati',
     material_en: 'Solid Teak',
     material_id: 'Jati Solid',
+    dimensions: { width: '50cm', depth: '40cm', height: '77cm' },
     price: 12500000,
     img: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&q=80',
   },
@@ -40,6 +46,7 @@ export const products: Product[] = [
     name_id: 'Wastafel Akar Kayu',
     material_en: 'Root Teak',
     material_id: 'Akar Jati',
+    dimensions: { width: '50cm', depth: '40cm', height: '77cm' },
     price: 15800000,
     img: 'https://images.unsplash.com/photo-1595515106969-1ce29566ff1c?w=600&q=80',
   },
@@ -51,6 +58,7 @@ export const products: Product[] = [
     name_id: 'Wastafel Batu Sungai',
     material_en: 'Natural Stone',
     material_id: 'Batu Alam',
+    dimensions: { width: '50cm', depth: '40cm', height: '77cm' },
     price: 9800000,
     img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80',
   },
@@ -62,6 +70,7 @@ export const products: Product[] = [
     name_id: 'Meja Wastafel Live Edge',
     material_en: 'Live Edge Teak',
     material_id: 'Jati Live Edge',
+    dimensions: { width: '50cm', depth: '40cm', height: '77cm' },
     price: 8200000,
     img: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80',
   },
@@ -73,6 +82,7 @@ export const products: Product[] = [
     name_id: 'Lemari Vanity Jati',
     material_en: 'Solid Teak',
     material_id: 'Jati Solid',
+    dimensions: { width: '50cm', depth: '40cm', height: '77cm' },
     price: 11500000,
     img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80',
   },
@@ -84,6 +94,7 @@ export const products: Product[] = [
     name_id: 'Cermin Kayu Ukir',
     material_en: 'Teak Frame',
     material_id: 'Bingkai Jati',
+    dimensions: { width: '50cm', depth: '40cm', height: '77cm' },
     price: 3200000,
     img: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?w=600&q=80',
   },
@@ -95,6 +106,7 @@ export const products: Product[] = [
     name_id: 'Set Sabun & Handuk Jati',
     material_en: 'Solid Teak',
     material_id: 'Jati Solid',
+    dimensions: { width: '50cm', depth: '40cm', height: '77cm' },
     price: 1800000,
     img: 'https://images.unsplash.com/photo-1563178406-4cdc2923acbc?w=600&q=80',
   },
@@ -106,6 +118,7 @@ export const products: Product[] = [
     name_id: 'Patung Kayu Apung',
     material_en: 'Driftwood',
     material_id: 'Kayu Apung',
+    dimensions: { width: '50cm', depth: '40cm', height: '77cm' },
     price: 2500000,
     img: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80',
   },
@@ -117,6 +130,7 @@ export const products: Product[] = [
     name_id: 'Wastafel Palung',
     material_en: 'Solid Teak',
     material_id: 'Jati Solid',
+    dimensions: { width: '50cm', depth: '40cm', height: '77cm' },
     price: 18500000,
     img: 'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&q=80',
   },
@@ -128,6 +142,7 @@ export const products: Product[] = [
     name_id: 'Lemari Tinggi',
     material_en: 'Solid Teak',
     material_id: 'Jati Solid',
+    dimensions: { width: '50cm', depth: '40cm', height: '77cm' },
     price: 14200000,
     img: 'https://images.unsplash.com/photo-1543248939-ff40856f65d4?w=600&q=80',
   },
@@ -139,6 +154,7 @@ export const products: Product[] = [
     name_id: 'Meja Slab',
     material_en: 'Teak Slab',
     material_id: 'Slab Jati',
+    dimensions: { width: '50cm', depth: '40cm', height: '77cm' },
     price: 6800000,
     img: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80',
   },
@@ -150,6 +166,7 @@ export const products: Product[] = [
     name_id: 'Panel Dinding Ukir',
     material_en: 'Solid Teak',
     material_id: 'Jati Solid',
+    dimensions: { width: '50cm', depth: '40cm', height: '77cm' },
     price: 4500000,
     img: 'https://images.unsplash.com/photo-1577140917170-285929fb55b7?w=600&q=80',
   },
